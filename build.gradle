@@ -10,7 +10,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(21)	// Spring Boot 2.7.x는 공식적으로 Java 17 권장
 	}
 }
 
@@ -22,26 +22,48 @@ configurations {
 }
 
 repositories {
-	mavenCentral()
+	mavenCentral()										// Maven Central 저장소 사용
+}
+
+ext {
+	set('springCloudVersion', "2021.0.9")				// Spring Cloud BOM 버전 설정 (2.7.18 호환)
+	set('testcontainersVersion', "1.19.8")				// 사용할 테스트 컨테이너 버전 설정
 }
 
 dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'		// 운영/모니터링 지표 및 관리 엔드포인트 제공
+	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'		// JDBC를 통한 데이터 엑게스 지원(Spring Data JDBC)
 	implementation 'org.springframework.boot:spring-boot-starter-web'			// Spring MVC, Tomcat서버, 웹 어노테이션
 	implementation 'org.springframework.boot:spring-boot-starter-validation'	// Java Bean Validation(JSR-380) 지원 (@Valid, @NotNull 등)
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'		// JUnit, Mockito, Spring Test 등 통합 테스트 환경용 기본 패키지
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'				// JUnit 플랫폼에서 테스트 실행 시 필요
-	testImplementation 'org.springframework.boot:spring-boot-starter-webflux'	// 리액티브 웹 애플리케이션(WebFlux) 테스트용(WebTestClient 등 사용)
+	implementation 'org.springframework.cloud:spring-cloud-starter-config'		// Spring Cloud Config 클라이언트 (분산 설정 관리)
+	implementation 'org.springframework.retry:spring-retry'						// 실패한 작업의 재시도 로직 제공
+	implementation 'org.flywaydb:flyway-core'									// 데이터베이스 마이그레이션 도구
+
+	runtimeOnly 'org.postgresql:postgresql'										// 애플리케이션 실행 시 PostgreSQL 연결을 위한 JDBC 드라이버만 필요
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'	// @ConfigurationProperties 클래스를 위한 메타데이터 생성
+	
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'		// JUnit, Mockito, Spring Test 등 통합 테스트 환경용 기본 패키지
+	testImplementation 'org.springframework.boot:spring-boot-starter-webflux'	// 리액티브 웹 애플리케이션(WebFlux) 테스트용(WebTestClient 등 사용)
+	testImplementation 'org.testcontainers:postgresql'							// PostgreSQL DB에 대한 컨테이너 관리 기능을 제공
+	
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'				// JUnit 플랫폼에서 테스트 실행 시 필요
+}
+
+dependencyManagement {
+	imports {																	// BOM 가져오기
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"	// Spring Cloud
+		mavenBom "org.testcontainers:testcontainers-bom:${testcontainersVersion}"				// 테스트컨테이너 의존성 관리
+	}
 }
 
 bootRun {
-	systemProperty 'spring.profiles.active', 'testdata'
+	systemProperty 'spring.profiles.active', 'testdata'							// bootRun 시 'testdata' 프로파일 적용
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+	useJUnitPlatform()															// JUnit5 플랫폼 사용
 }
 
 tasks.withType(JavaCompile) {
-    options.compilerArgs << "-parameters"
+    options.compilerArgs << "-parameters"										// 컴파일 시 매개변수 이름을 .class 파일에 저장 (리플렉션 시 사용)
 }

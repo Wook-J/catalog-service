@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:14.12:///	# 테스트 컨테이너의 PostgreSQL 모듈 지정
+#  main:                  # 로컬에서 이 설정 안해도 돌아감
+#    allow-bean-definition-overriding: true
+
+#  cloud:                 # 로컬에서 이 설정 안해도 돌아감
+#    config:              # config-service 프로젝트를 .\gradew bootRun 해야함
+#      enabled: false

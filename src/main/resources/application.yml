@@ -10,6 +10,31 @@ server:
 spring:
   application:
     name: catalog-service
+  config:
+    import: "optional:configserver:"  # 가능하면 컨피그 서버에서 설정 데이터를 가져온다
+  cloud:
+    config:
+      uri: http://localhost:8888      # 설정 서버의 URL
+      request-connect-timeout: 5000   # 설정 서버에 연결될 때까지 기다리는 시간(ms)
+      request-read-timeout: 5000      # 설정 서버에서 설정 데이터를 읽을 때까지 기다리는 시간(ms)
+      fail-fast: true                 # 설정 서버 연결 실패를 치명적 오류로 인식
+      retry:
+        max-attempts: 6               # 시도의 최대 횟수
+        initial-interval: 1000        # 최초 재시도 지연 시간(ms)
+        max-interval: 2000            # 재시도 최대 지연 시간(ms)
+        multiplier: 1.1               # 지연 시간 계산 승수
+  datasource:
+    username: user
+    password: password
+    url: jdbc:postgresql://localhost:5432/polardb_catalog
+    hikari:
+      connection-timeout: 2000        # 풀에서 연결 객체를 얻기 위해 기다려야 하는 최대 시간(ms)
+      maximum-pool-size: 5            # 히카리CP가 풀에 최대한으로 유지할 수 있는 연결 객체의 수
+
+#  sql:                               # 5.4.2 플라이웨이 사용시 필요 X
+#    init:
+#      mode: always                   # SQL 스크립트에서 DB 스키마 초기화
+
 #  profiles:                   # STS4 에서 Run As - Spring Boot App으로 할 경우 필요함
 #    active: testdata          # 이하 동일(클라우드 네이티브 방식에선 바람직하진 않음)
 # STS에서의 Run은 IDE 자체 런타임 설정을 이용함(build.gradle의 bootRun 설정 무시)
@@ -18,6 +43,12 @@ spring:
 # 여기 대신에 프로젝트 우클릭 Run As - Run Configurations...
 # Spring Boot App - catalog-sevice... 의 Arguments 탭의 VM arguments에 
 # -Dspring.profiles.active=testdata 작성해도 됨
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh              # HTTP를 통해 /actuator/refresh 엔드 포인트를 노출한다.
 
 polar:
   greeting: Welcome to the local book catalog!

@@ -3,6 +3,8 @@ package com.polarbookshop.catalogservice.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Instant;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
@@ -18,32 +20,44 @@ class BookJsonTests {
 	
 	@Test
 	void testSerialize() throws Exception{
-		var book = new Book("1234567890", "Title", "Author", 9.90);
+		var now = Instant.now();
+		var book = new Book(394L, "1234567890", "Title", "Author", 9.90, "Polarsophia", now, now, 21);
 		var jsonContent = json.write(book);		// JSON 문자열로 변환
 		
 		// 변환된 JSON에서 isbn, title, author, price 필드값을 꺼내서 변환이 정확한지 테스트
+		// 5.2 id, createdDate, lastModifiedDate, version 추가
+		assertThat(jsonContent).extractingJsonPathNumberValue("@.id").isEqualTo(book.id().intValue());
 		assertThat(jsonContent).extractingJsonPathStringValue("@.isbn").isEqualTo(book.isbn());
 		assertThat(jsonContent).extractingJsonPathStringValue("@.title").isEqualTo(book.title());
 		assertThat(jsonContent).extractingJsonPathStringValue("@.author").isEqualTo(book.author());
 		assertThat(jsonContent).extractingJsonPathNumberValue("@.price").isEqualTo(book.price());
+		assertThat(jsonContent).extractingJsonPathStringValue("@.createdDate").isEqualTo(book.createdDate().toString());
+		assertThat(jsonContent).extractingJsonPathStringValue("@.lastModifiedDate").isEqualTo(book.lastModifiedDate().toString());
+		assertThat(jsonContent).extractingJsonPathNumberValue("@.version").isEqualTo(book.version());
 	}
 	
 	@Test
 	void testDeserialize() throws Exception {
+		var instant = Instant.parse("2021-09-07T22:50:37.135029Z");
 		// 자바 텍스트 블록 기능을 사용해 JSON 객체를 정의(문자열로 JSON을 직접 만듦)
 		var content = """
 			{
+				"id": 394,
 				"isbn": "1234567890",
 				"title": "Title",
 				"author": "Author",
-				"price": 9.90 
+				"price": 9.90,
+				"publisher": "Polarsophia",
+				"createdDate": "2021-09-07T22:50:37.135029Z",
+				"lastModifiedDate": "2021-09-07T22:50:37.135029Z",
+				"version": 21
 			}
 			""";
 		
 		// JSON에서 자바 객체로의 변환을 확인
 		assertThat(json.parse(content))
 			.usingRecursiveComparison()
-			.isEqualTo(new Book("1234567890", "Title", "Author", 9.90));
+			.isEqualTo(new Book(394L,"1234567890", "Title", "Author", 9.90, "Polarsophia", instant, instant, 21));
 		
 		/* usingRecursiveComparison : 객체를 필드 하나하나 다 비교하는 방법
 		 * - 깊게 들여다봐서 객체 안에 또 객체가 있으면 그것까지 전부 재귀하게 비교해줌

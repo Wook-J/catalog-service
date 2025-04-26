@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import com.polarbookshop.catalogservice.domain.Book;
@@ -13,6 +14,7 @@ import com.polarbookshop.catalogservice.domain.Book;
 // SpringBoot를 실행하고, 테스트 중 실제 HTTP 요청을 할 수 있도록 설정
 // 서버가 임의의 포트에서 실행되도록 하여 테스트 시 서버와 클라가 포트 충돌 없이 독립 실행
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("integration")	// application-integration.yml 에서 설정 로드하는 경우
 class CatalogServiceApplicationTests {
 
 	@Autowired	// 테스트를 위해 REST 엔드포인트를 호출할 유틸리티
@@ -21,7 +23,7 @@ class CatalogServiceApplicationTests {
 	@Test		// 책 생성 -> 조회, 일치 여부 검증
 	void whenGetRequestWithIdThenBookReturned() {
 		var bookIsbn = "1231231230";
-		var bookToCreate = new Book(bookIsbn, "Title", "Author", 9.90);
+		var bookToCreate = Book.of(bookIsbn, "Title", "Author", 9.90, "Polarsophia");
 		Book expectedBook = webTestClient.post().uri("/books")
 			.bodyValue(bookToCreate)
 			.exchange()
@@ -40,7 +42,7 @@ class CatalogServiceApplicationTests {
 	
 	@Test		// 책 생성 기능 검증
 	void whenPostRequestThenBookCreated() {
-		var expectedBook = new Book("1231231231", "Title", "Author", 9.90);
+		var expectedBook = Book.of("1231231231", "Title", "Author", 9.90, "Polarsophia");
 		
 		webTestClient.post().uri("/books")
 			.bodyValue(expectedBook)	// 객체는 JSON 형식으로 직렬화되어 전송됨
@@ -55,7 +57,7 @@ class CatalogServiceApplicationTests {
 	@Test		// 책 생성 및 업데이트된 후 검증
 	void whenPutRequestThenBookUpdated() {
 		var bookIsbn = "1231231232";
-		var bookToCreate = new Book(bookIsbn, "Title", "Author", 9.90);
+		var bookToCreate = Book.of(bookIsbn, "Title", "Author", 9.90, "Polarsophia");
 		Book createdBook = webTestClient.post().uri("/books")
 			.bodyValue(bookToCreate)
 			.exchange()
@@ -63,7 +65,8 @@ class CatalogServiceApplicationTests {
 			.expectBody(Book.class).value(book -> assertThat(book).isNotNull())
 			.returnResult().getResponseBody();
 		
-		var bookToUpdate = new Book(createdBook.isbn(), createdBook.title(), createdBook.author(), 7.95);
+		var bookToUpdate = new Book(createdBook.id(), createdBook.isbn(), createdBook.title(), createdBook.author(), 7.95,
+				createdBook.publisher(), createdBook.createdDate(), createdBook.lastModifiedDate(), createdBook.version());
 
 		webTestClient.put().uri("/books/" + bookIsbn)
 			.bodyValue(bookToUpdate)

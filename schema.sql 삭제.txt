@@ -1,0 +1,13 @@
+기존 파일 경로 : src/main/resources
+
+DROP TABLE IF EXISTS book;		-- 테이블이 이미 존재하면 삭제한다.
+CREATE TABLE book (
+	id					BIGSERIAL PRIMARY KEY NOT NULL,	-- 테이블의 기본 키. 		
+	author				varchar(255) NOT NULL,			-- 해당 컬럼이 반드시 값이 있어야함
+	isbn				varchar(255) UNIQUE NOT NULL,	-- ISBN이 오직 하나의 책에만 할당됨
+	price				float8 NOT NULL,
+	title				varchar(255) NOT NULL,
+	created_date		timestamp NOT NULL,
+	last_modified_date	timestamp NOT NULL,
+	version				integer NOT NULL
+);

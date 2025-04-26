@@ -1,6 +1,8 @@
 package com.polarbookshop.catalogservice.demo;
 // ex 4.6 testdata 프로파일이 활성일 때 도서 테스트 데이터 로드
 
+import java.util.List;
+
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
@@ -30,10 +32,22 @@ public class BookDataLoader {
 	// ApplicationReadyEvent 발생 시 테스트 데이터 생성 시작
 	@EventListener(ApplicationReadyEvent.class)
 	public void loadBookTestData() {
-		var book1 = new Book("1234567891", "Northern Lights", "Lyra Silverstar", 9.90);
-		var book2 = new Book("1234567892", "Polar Journey", "Iorek Polar Journey", 12.90);
 		
-		bookRepository.save(book1);
-		bookRepository.save(book2);
+		// 빈 DB로 시작하기 위해 기존 책이 있다면 모두 삭제
+		bookRepository.deleteAll();
+		
+		// 기존 : 새로운 Book 객체 만듦
+		// Book.java에서 @Id, @Version 처리 후 프레임 워크 내부적으로 식별자와 버전에 대한 할당 값을 처리
+		
+//		var book1 = new Book("1234567891", "Northern Lights", "Lyra Silverstar", 9.90);
+//		var book2 = new Book("1234567892", "Polar Journey", "Iorek Polar Journey", 12.90);
+		var book1 = Book.of("1234567891", "Northern Lights", "Lyra Silverstar", 9.90, "Polarsophia");
+		var book2 = Book.of("1234567892", "Polar Journey", "Iorek Polar Journey", 12.90, "Polarsophia");
+		
+//		bookRepository.save(book1);
+//		bookRepository.save(book2);
+		
+		// 여러 객체를 한번에 저장
+		bookRepository.saveAll(List.of(book1, book2));
 	}
 }

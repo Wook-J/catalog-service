@@ -1,0 +1,23 @@
+server:
+  port: 9001                  # 웹서버 포트 설정 
+  tomcat:
+    connection-timeout: 2s    # 클라에서 TCP연결 수락하고 실제 HTTP 요청 받기까지 톰캣이 기다리는 시간
+    keep-alive-timeout: 15s   # 한 번 연결된 클라와 다른 요청을 기다리는 최대 시간
+    threads:
+      max: 50                 # 요청 처리를 위한 최대 스레드 수
+      min-spare: 5            # 항상 대기하고 있는 최소 스레드 수
+
+spring:
+  application:
+    name: catalog-service
+#  profiles:                   # STS4 에서 Run As - Spring Boot App으로 할 경우 필요함
+#    active: testdata          # 이하 동일(클라우드 네이티브 방식에선 바람직하진 않음)
+# STS에서의 Run은 IDE 자체 런타임 설정을 이용함(build.gradle의 bootRun 설정 무시)
+# testdata 직접 보려면 PowerShell 에서 .\gradlew bootRun 으로 실행하면 됨
+
+# 여기 대신에 프로젝트 우클릭 Run As - Run Configurations...
+# Spring Boot App - catalog-sevice... 의 Arguments 탭의 VM arguments에 
+# -Dspring.profiles.active=testdata 작성해도 됨
+
+polar:
+  greeting: Welcome to the local book catalog!
